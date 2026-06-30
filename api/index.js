@@ -51,8 +51,7 @@ async function loadModel() {
 function getModel() {
   if (model) return Promise.resolve(model);
   if (!modelLoading) {
-    modelLoading = loadModel().catch(err => {
-      console.error('Model load error:', err);
+    modelLoading = loadModel().then(() => model).catch(err => {
       modelLoading = null;
       throw err;
     });
