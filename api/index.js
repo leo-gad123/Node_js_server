@@ -30,7 +30,10 @@ async function loadModel(baseUrl) {
 function getModel(baseUrl) {
   if (model) return Promise.resolve(model);
   if (!modelLoading) {
-    modelLoading = loadModel(baseUrl);
+    modelLoading = loadModel(baseUrl).catch(err => {
+      modelLoading = null;
+      throw err;
+    });
   }
   return modelLoading;
 }
@@ -57,7 +60,6 @@ function preprocessImage(buffer) {
     let tensor = tf.tensor3d(data, [height, width, 4], 'float32');
     tensor = tensor.slice([0, 0, 0], [-1, -1, 3]);
     tensor = tf.image.resizeBilinear(tensor, [IMG_SIZE, IMG_SIZE]);
-
     return tensor.expandDims(0);
   });
 }
