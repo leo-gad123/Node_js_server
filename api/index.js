@@ -114,6 +114,19 @@ app.post('/predict', upload.single('image'), async (req, res) => {
   }
 });
 
+app.get('/debug', (req, res) => {
+  const dir = path.join(__dirname, '..', 'model_json');
+  let files = [];
+  let modelExists = false;
+  try {
+    files = fs.readdirSync(dir);
+    modelExists = fs.existsSync(path.join(dir, 'model.json'));
+  } catch(e) {
+    files = ['Error: ' + e.message];
+  }
+  res.json({ dir, files, modelExists, cwd: process.cwd(), __dirname });
+});
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
