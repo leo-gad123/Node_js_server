@@ -114,17 +114,31 @@ app.post('/predict', upload.single('image'), async (req, res) => {
   }
 });
 
-app.get('/debug', (req, res) => {
+app.get('/debug', async (req, res) => {
   const dir = path.join(__dirname, '..', 'model_json');
   let files = [];
   let modelExists = false;
+  let loadResult = null;
   try {
+    const json = JSON.parse(fs.readFileSync(path.join(dir, 'model.json'), 'utf-8'));
     files = fs.readdirSync(dir);
-    modelExists = fs.existsSync(path.join(dir, 'model.json'));
+    modelExists = true;
+    const weightFiles = json.weightsManifest[0].paths.map(p => ({
+      file: p,
+      exists: fs.existsSync(path.join(dir, p)),
+      size: fs.statSync(path.join(dir, p)).size
+    }));
+    try {
+      await loadModel();
+      loadResult = 'success';
+      loadResult = 'loaded: ' + (model !== null);
+    } catch(e) {
+      loadResult = 'error: ' + e.message + ' | stack: ' + e.stack?.substring(0, 500);
+    }
   } catch(e) {
     files = ['Error: ' + e.message];
   }
-  res.json({ dir, files, modelExists, cwd: process.cwd(), __dirname });
+  res.json({ dir, files, modelExists, weightFiles, loadResult, cwd: process.cwd(), __dirname });
 });
 
 app.get('/health', (req, res) => {
