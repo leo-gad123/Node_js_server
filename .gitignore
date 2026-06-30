@@ -2,3 +2,5 @@
 /node_modules
 /model
 /tf_clean
+.vercel
+.env*

@@ -1,13 +1,19 @@
 {
   "license": "MIT",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "node api/index.js",
+    "vercel-build": "echo 'Build complete'"
+  },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "jpeg-js": "^0.4.4",
     "multer": "^2.1.1",
-    "node-fetch": "^3.3.2",
-    "pngjs": "^7.0.0",
-    "tfjs-node": "^1.0.0"
+    "pngjs": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }
