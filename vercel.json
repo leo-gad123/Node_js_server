@@ -4,17 +4,9 @@
     {
       "src": "api/index.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "model_json/**",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/model_json/(.*)",
-      "dest": "/model_json/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "api/index.js"
