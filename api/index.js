@@ -114,33 +114,6 @@ app.post('/predict', upload.single('image'), async (req, res) => {
   }
 });
 
-app.get('/debug', async (req, res) => {
-  const dir = path.join(__dirname, '..', 'model_json');
-  let files = [];
-  let modelExists = false;
-  let loadResult = null;
-  try {
-    const json = JSON.parse(fs.readFileSync(path.join(dir, 'model.json'), 'utf-8'));
-    files = fs.readdirSync(dir);
-    modelExists = true;
-    const weightFiles = json.weightsManifest[0].paths.map(p => ({
-      file: p,
-      exists: fs.existsSync(path.join(dir, p)),
-      size: fs.statSync(path.join(dir, p)).size
-    }));
-    try {
-      await loadModel();
-      loadResult = 'success';
-      loadResult = 'loaded: ' + (model !== null);
-    } catch(e) {
-      loadResult = 'error: ' + e.message + ' | stack: ' + e.stack?.substring(0, 500);
-    }
-  } catch(e) {
-    files = ['Error: ' + e.message];
-  }
-  res.json({ dir, files, modelExists, weightFiles, loadResult, cwd: process.cwd(), __dirname });
-});
-
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -148,6 +121,38 @@ app.get('/health', (req, res) => {
     classes: CLASSES,
     inputSize: IMG_SIZE
   });
+});
+
+app.get('/debug-fs', (req, res) => {
+  try {
+    const dir = path.join(__dirname, '..', 'model_json');
+    const files = fs.readdirSync(dir);
+    const info = files.map(f => {
+      const fp = path.join(dir, f);
+      try { return { name: f, size: fs.statSync(fp).size }; }
+      catch(e) { return { name: f, error: e.message }; }
+    });
+    res.json({ dir, files: info });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
+});
+
+app.get('/debug-load', async (req, res) => {
+  try {
+    const dir = path.join(__dirname, '..', 'model_json');
+    const modelJson = JSON.parse(fs.readFileSync(path.join(dir, 'model.json'), 'utf-8'));
+    const weightPaths = modelJson.weightsManifest[0].paths;
+    const weightInfo = weightPaths.map(p => ({
+      path: p,
+      exists: fs.existsSync(path.join(dir, p)),
+      size: fs.statSync(path.join(dir, p)).size
+    }));
+    await loadModel();
+    res.json({ success: true, modelLoaded: model !== null, weights: weightInfo });
+  } catch (e) {
+    res.json({ success: false, error: e.message, stack: e.stack?.substring(0, 1000) });
+  }
 });
 
 module.exports = app;
